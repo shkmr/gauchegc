@@ -1,6 +1,6 @@
 #!/usr/bin/env gosh
 ;;; -*-Scheme-*-
-;;; 
+;;;
 ;;; somepoint: yet another *point presentation tool.
 ;;;
 
@@ -22,17 +22,26 @@
               (newline)
               (lp (+ i 1)))))))
 
+(define (one-up)
+  (let lp ((i (- pt 2)))
+    (if (<= i 0)
+      (set! pt 0)
+      (if (equal? (vector-ref tv i) "")
+        (set! pt (+ i 1))
+        (lp (- i 1))))))
 
 (define (show-prev)
-  (define (one-up)
-    (let lp ((i (- pt 2)))
-      (if (<= i 0) 
-          (set! pt 0)
-          (if (equal? (vector-ref tv i) "")
-              (set! pt (+ i 1))
-              (lp (- i 1))))))
   (one-up)                              ; top of current page
   (one-up)                              ; top of previous page.
+  (show-page))
+
+(define (show-top)
+  (set! pt 0)
+  (show-page))
+
+(define (show-bot)
+  (set! pt nl)
+  (one-up)
   (show-page))
 
 (define (main args)
@@ -44,7 +53,7 @@
                                    (port->string-list p)))))
         (set! nl (vector-length tv))
         (show-page)
-        (with-raw-mode 
+        (with-raw-mode
          (lambda ()
            (let lp ((c (read-char)))
              ;;   (format #t "c=~s~%" c)
@@ -53,8 +62,10 @@
                  (begin
                    (case c
                      ((#\b #\B #\p #\P) (show-prev))
-                     ((#\q #\Q) (exit 0))
-                     (else      (show-page)))
+                     ((#\<)             (show-top))
+                     ((#\>)             (show-bot))
+                     ((#\q #\Q)         (exit 0))
+                     (else              (show-page)))
                    (lp (read-char))))))))))
 
 
